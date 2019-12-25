@@ -1,11 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { createStore } from "redux";
+import "./index.css";
+
+import Store from "./store";
 
 const initialState = { count: 0 };
 
-//reducer
-function reducer(state = { count: 0 }, action) {
+function updateState(state, action) {
     switch (action.type) {
         case "INCREMENT":
             return { count: state.count + action.amount };
@@ -18,54 +19,36 @@ function reducer(state = { count: 0 }, action) {
     }
 }
 
-//action creators
-function increment(amount) {
-    return { type: `INCREMENT`, amount };
-}
-function decrement(amount) {
-    return { type: `DECREMENT`, amount };
-}
-function reset() {
-    return { type: `RESET` };
-}
+const incrementAction = { type: "INCREMENT", amount: 1 };
+const decrementAction = { type: "DECREMENT", amount: 1 };
+const resetAction = { type: "RESET" };
 
-const store = createStore(reducer, initialState);
+const store = new Store(updateState, initialState);
 
 class Counter extends React.Component {
     constructor(props) {
         super(props);
         this.increment = this.increment.bind(this);
         this.decrement = this.decrement.bind(this);
-        this.reset = this.reset.bind(this);
-        this.amount = React.createRef();
     }
     componentDidMount() {
         store.subscribe(() => this.forceUpdate());
     }
-    increment = () => {
-        let amount = parseInt(this.amount.current.value || 1);
-        store.dispatch(increment(amount));
-    };
+    increment = () => store.update(incrementAction);
 
-    decrement = () => {
-        let amount = parseInt(this.amount.current.value || 1);
-        console.log(amount);
-        store.dispatch(decrement(amount));
-    };
+    decrement = () => store.update(decrementAction);
 
-    reset = () => store.dispatch(reset());
+    reset = () => store.update(resetAction);
 
     render() {
-        const count = store.getState().count;
         return (
             <div className="counter">
-                <span className="count">{count}</span>
+                <span className="count">{store.state.count}</span>
                 <div className="buttons">
                     <button onClick={this.increment}>+</button>
                     <button onClick={this.decrement}>-</button>
                     <button onClick={this.reset}>reset</button>
                 </div>
-                <input type="text" ref={this.amount} defaultValue="1"></input>
             </div>
         );
     }
